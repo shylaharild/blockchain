@@ -1,3 +1,4 @@
+# Initialising our blockchain list
 blockchain = []
 
 
