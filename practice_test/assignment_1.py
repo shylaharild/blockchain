@@ -5,8 +5,8 @@
 
 # Initialising the variables
 # Answer to Question 1
-name = "Sri"
-age = "30"
+name = ""
+age = ""
 
 
 def get_name():
