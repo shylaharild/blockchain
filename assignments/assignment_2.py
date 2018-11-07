@@ -14,7 +14,7 @@ def print_given_name():
     Uses 'for' loop to get each name from list.
     It also checks the length of each name and outputs the name that as 5 or more characters in it.
 
-    Also uses nested 'for' loop to check if name has character 'n' or 'N' in it
+    Also checks if name has character 'n' or 'N' in it
     """
     for name in username_list:
         # 1) Create a list of names and use a for loop to output the length of each name (len()).
@@ -26,9 +26,8 @@ def print_given_name():
             print("The name which has 5 or more character is " + name)
 
         # 3) Add another if check to see whether a name includes a “n” or “N” character.
-        for character in name:
-            if character == 'n' or character == 'N':
-                print("The name includes character n or N in it!")
+        if 'n' in name or 'N' in name:
+            print("The name includes character n or N in it!")
 
 
 # 4) Use a while loop to empty the list of names (via pop())
