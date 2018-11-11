@@ -7,7 +7,7 @@ genesis_block = {
     'transaction': []
 }
 blockchain = [genesis_block]
-open_transaction = []
+open_transactions = []
 owner = 'Sri'
 participants = {'Sri'}
 
@@ -75,11 +75,12 @@ def mine_block():
         'recipient': owner,
         'amount': MINING_REWARD
     }
-    open_transaction.append(reward_transaction)
+    copied_transactions = open_transactions[:]
+    copied_transactions.append(reward_transaction)
     block = {
         'previous_hash': hashed_block,
         'index': len(blockchain),
-        'transaction': open_transaction
+        'transaction': copied_transactions
     }
     blockchain.append(block)
     return True
