@@ -166,7 +166,7 @@ while waiting_for_input:
             blockchain[0] = {
                 'previous_hash': '',
                 'index': 0,
-                '       transaction': [{'sender': 'dammale', 'recipient': 'gummale', 'amount': '100'}]
+                'transaction': [{'sender': 'dammale', 'recipient': 'gummale', 'amount': '100'}]
             }
     elif user_choice == 'q':
         waiting_for_input = False
