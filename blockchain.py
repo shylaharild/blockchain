@@ -176,7 +176,7 @@ while waiting_for_input:
         print_blockchain_elements()
         print("Invalid Blockchain!!")
         break
-    print(get_balances('Sri'))
+    print('The Balance available for {} is: {}'.format('Sri', get_balances('Sri')))
 else:
     print("User left!")
 
