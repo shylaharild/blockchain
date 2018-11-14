@@ -39,3 +39,11 @@ person_hobbies_list = [el['hobbies'] for el in persons_list]
 print(person_name_list)
 print(person_age_list)
 print(person_hobbies_list)
+
+""" The question has asked you to UNPACK. not group based on the keys in the dictionary.
+So the above is not the right answer"""
+print("-*-" * 10)
+p1, p2, p3 = persons_list
+print(p1)
+print(p2)
+print(p3)
