@@ -7,7 +7,11 @@ persons_list = [{'name': 'Shyla', 'age': 30,
 person_name_list = [el['name'] for el in persons_list]
 print(person_name_list)
 # 3) Use a list comprehension to check whether all persons are older than 20.
-person_above_20 = [el['name'] for el in persons_list if el['age'] > 20]
+"""
+The Question says Check if the age is above 20 for all person. So the output expected is boolean : True/False
+So using all/any feature will be correct. In this case, it is 'any'
+"""
+person_above_20 = any([el['age'] > 20 for el in persons_list])
 print(person_above_20)
 # 4) Copy the person list such that you can safely edit the name of the first person (without changing the original list).
 # copied_persons = persons[:]
