@@ -14,7 +14,6 @@ open_transactions = []
 owner = 'Sri'
 participants = {'Sri'}
 
-
 def hash_block(block):
     """ Hashes a block and returns a string representation of it.
 
@@ -23,6 +22,23 @@ def hash_block(block):
     """
     return hl.sha256(json.dumps(block).encode()).hexdigest()
     # return '-'.join([str(block[key]) for key in block])
+
+
+
+def valid_proof(transactions, last_hash, proof):
+    guess = (str(transactions) + str(last_hash) + str(proof)).encode()
+    guess_hash = hl.sha256(guess).hexdigest()
+    print(guess_hash)
+    return guess_hash[0:2] == 'g6'
+
+
+def proof_of_work():
+    last_block = blockchain[-1]
+    last_hash = hash_block(last_block)
+    proof = 0
+    while valid_proof(open_transactions, last_hash, proof):
+        proof += 1
+    return proof
 
 
 def get_balances(participant):
