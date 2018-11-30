@@ -1,5 +1,0 @@
-{
-    "python.linting.pylintEnabled": true,
-    "files.autoSave": "onWindowChange",
-    "python.pythonPath": "/usr/local/bin/python3"
-}
