@@ -1,6 +1,7 @@
 from functools import reduce
 import hashlib as hl
 from collections import OrderedDict
+import json
 
 from hash_util import hash_string_256, hash_block
 
@@ -22,6 +23,50 @@ open_transactions = []
 owner = 'Sri'
 # Registered participants: Ourself + other people sending/ receiving coins
 participants = {'Sri'}
+
+
+def load_data():
+    with open('blockchain.txt', mode='r') as f:
+        file_content = f.readlines()
+        global blockchain
+        global open_transactions
+        blockchain = json.loads(file_content[0][:-1])
+        updated_blockchain = []
+        for block in blockchain:
+            updated_block = {
+                'previous_hash': block['previous_hash'],
+                'index': block['index'],
+                'proof': block['proof'],
+                'transactions': [OrderedDict(
+                    [('sender', tx['sender']), ('recipient', tx['recipient']), ('amount', tx['amount'])]) for tx in block['transactions']]
+            }
+            updated_blockchain.append(updated_block)
+        blockchain = updated_blockchain
+
+        updated_open_transactions = []
+        for tx in open_transactions:
+            updated_open_tx = {
+                'previous_hash': open_transactions['previous_hash'],
+                'index': open_transactions['index'],
+                'proof': open_transactions['proof'],
+                'transactions': [OrderedDict(
+                    [('sender', tx['sender']), ('recipient', tx['recipient']), ('amount', tx['amount'])]) for tx in tx['transactions']]
+            }
+            updated_open_transactions.append(updated_open_tx)
+        open_transactions = updated_open_transactions
+
+
+load_data()
+
+
+def save_data():
+    with open('blockchain.txt', mode='w') as f:
+        # f.write(str(blockchain))
+        # f.write('\n')
+        # f.write(str(open_transactions))
+        f.write(json.dumps(blockchain))
+        f.write('\n')
+        f.write(json.dumps(open_transactions))
 
 
 def valid_proof(transactions, last_hash, proof):
@@ -101,11 +146,13 @@ def add_transaction(recipient, sender=owner, amount=1.0):
     #     'recipient': recipient,
     #     'amount': amount
     # }
-    transaction = OrderedDict([('sender', sender), ('recipient', recipient), ('amount', amount)])
+    transaction = OrderedDict(
+        [('sender', sender), ('recipient', recipient), ('amount', amount)])
     if verify_transaction(transaction):
         open_transactions.append(transaction)
         participants.add(sender)
         participants.add(recipient)
+        save_data()
         return True
     return False
 
@@ -123,7 +170,8 @@ def mine_block():
     #     'recipient': owner,
     #     'amount': MINING_REWARD
     # }
-    reward_transaction = OrderedDict([('sender', 'MINING'), ('recipient', owner), ('amount', MINING_REWARD)])
+    reward_transaction = OrderedDict(
+        [('sender', 'MINING'), ('recipient', owner), ('amount', MINING_REWARD)])
     # Copy transaction instead of manipulating the original open_transactions list
     # This ensures that if for some reason the mining should fail, we don't have the reward transaction stored in the open transactions
     copied_transactions = open_transactions[:]
@@ -206,6 +254,7 @@ while waiting_for_input:
     elif user_choice == '2':
         if mine_block():
             open_transactions = []
+            save_data()
     elif user_choice == '3':
         print_blockchain_elements()
     elif user_choice == '4':
