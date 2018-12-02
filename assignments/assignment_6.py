@@ -9,15 +9,25 @@ def write_to_file(text):
 
     print('Write Complete!')
 
+def print_from_file():
+    with open('assignment_6.txt', mode='r') as f:
+        file_content = f.readlines()
+        print(file_content)
+    
+    print('Read Complete!')
+
 input_state = True
 while input_state:
     print('1. Enter your string')
+    print('2. Read from the file')
     print('x. Quit')
     user_input = input('Enter your choice: ')
 
     if user_input == '1':
         user_text = input('Enter your string: ')
         write_to_file(user_text)
+    elif user_input == '2':
+        print_from_file()
     elif user_input == 'x':
         input_state = False
     else:
