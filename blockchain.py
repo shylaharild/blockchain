@@ -65,6 +65,8 @@ def load_data():
         blockchain = [genesis_block]
         # Unhandled transactions
         open_transactions = []
+    except IndexError:
+        print("The file is empty. Initialize with Genesis block!")
     finally:
         print('Cleanup!')
 
@@ -91,6 +93,8 @@ def save_data():
             # f.write(pickle.dumps(save_data))
     except IOError:
         print("Save failed!")
+    except IndexError:
+        print("The file is empty. Initialize with Genesis block!")
 
 
 def valid_proof(transactions, last_hash, proof):
@@ -183,31 +187,34 @@ def add_transaction(recipient, sender=owner, amount=1.0):
 
 def mine_block():
     """Create a new block and add open transactions to it."""
-    # Fetch the currently last block of the blockchain
-    last_block = blockchain[-1]
-    # Hash the last block (=> to be able to compare it to the stored hash value)
-    hashed_block = hash_block(last_block)
-    proof = proof_of_work()
-    # Miners should be rewarded, so let's create a reward transaction
-    # reward_transaction = {
-    #     'sender': 'MINING',
-    #     'recipient': owner,
-    #     'amount': MINING_REWARD
-    # }
-    reward_transaction = OrderedDict(
-        [('sender', 'MINING'), ('recipient', owner), ('amount', MINING_REWARD)])
-    # Copy transaction instead of manipulating the original open_transactions list
-    # This ensures that if for some reason the mining should fail, we don't have the reward transaction stored in the open transactions
-    copied_transactions = open_transactions[:]
-    copied_transactions.append(reward_transaction)
-    block = {
-        'previous_hash': hashed_block,
-        'index': len(blockchain),
-        'transactions': copied_transactions,
-        'proof': proof
-    }
-    blockchain.append(block)
-    return True
+    try:
+        # Fetch the currently last block of the blockchain
+        last_block = blockchain[-1]
+        # Hash the last block (=> to be able to compare it to the stored hash value)
+        hashed_block = hash_block(last_block)
+        proof = proof_of_work()
+        # Miners should be rewarded, so let's create a reward transaction
+        # reward_transaction = {
+        #     'sender': 'MINING',
+        #     'recipient': owner,
+        #     'amount': MINING_REWARD
+        # }
+        reward_transaction = OrderedDict(
+            [('sender', 'MINING'), ('recipient', owner), ('amount', MINING_REWARD)])
+        # Copy transaction instead of manipulating the original open_transactions list
+        # This ensures that if for some reason the mining should fail, we don't have the reward transaction stored in the open transactions
+        copied_transactions = open_transactions[:]
+        copied_transactions.append(reward_transaction)
+        block = {
+            'previous_hash': hashed_block,
+            'index': len(blockchain),
+            'transactions': copied_transactions,
+            'proof': proof
+        }
+        blockchain.append(block)
+        return True
+    except IndexError:
+        print("The file is empty. Initialize with Genesis block!")
 
 
 def get_transaction_value():
@@ -279,6 +286,9 @@ while waiting_for_input:
         if mine_block():
             open_transactions = []
             save_data()
+        else:
+            print("Empty Blockchain store file found. Delete it before starting the program.")
+            break
     elif user_choice == '3':
         print_blockchain_elements()
     elif user_choice == '4':
