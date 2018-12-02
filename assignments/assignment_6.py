@@ -7,16 +7,21 @@ import pickle
 file_contents = []
 
 def write_to_file():
-    with open('assignment_6.txt', mode='w') as f:
-        f.write(json.dumps(file_contents))
-        f.write('\n')
+    with open('assignment_6.txt', mode='wb') as f:
+        # f.write(json.dumps(file_contents))
+        # f.write('\n')
+        contents = {
+            'text': file_contents
+        }
+        f.write(pickle.dumps(contents))
 
     print('Write Complete!')
 
 def print_from_file():
-    with open('assignment_6.txt', mode='r') as f:
-        file_content = f.readlines()
-        print(file_content)
+    with open('assignment_6.txt', mode='rb') as f:
+        # file_content = f.readlines()
+        file_content = pickle.loads(f.read())
+        print(file_content['text'])
     
     print('Read Complete!')
 
