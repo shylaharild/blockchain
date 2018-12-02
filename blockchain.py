@@ -9,15 +9,8 @@ from hash_util import hash_string_256, hash_block
 # The reward we give to miners (for creating a new block)
 MINING_REWARD = 10
 
-# Our starting block for the blockchain
-genesis_block = {
-    'previous_hash': '',
-    'index': 0,
-    'transactions': [],
-    'proof': 100
-}
 # Initializing our (empty) blockchain list
-blockchain = [genesis_block]
+blockchain = []
 # Unhandled transactions
 open_transactions = []
 # We are the owner of this blockchain node, hence this is our identifier (e.g. for sending coins)
@@ -27,58 +20,81 @@ participants = {'Sri'}
 
 
 def load_data():
-    with open('blockchain.txt', mode='r') as f:
-        # file_content = pickle.loads(f.read())
-        file_content = f.readlines()
-        global blockchain
-        global open_transactions
-        # blockchain = file_content['chain']
-        # open_transactions = file_content['ot']
-        blockchain = json.loads(file_content[0][:-1])
-        updated_blockchain = []
-        for block in blockchain:
-            updated_block = {
-                'previous_hash': block['previous_hash'],
-                'index': block['index'],
-                'proof': block['proof'],
-                'transactions': [OrderedDict(
-                    [('sender', tx['sender']), ('recipient', tx['recipient']), ('amount', tx['amount'])]) for tx in block['transactions']]
-            }
-            updated_blockchain.append(updated_block)
-        blockchain = updated_blockchain
+    global blockchain
+    global open_transactions
+    try:
+        with open('blockchain.txt', mode='r') as f:
+            # file_content = pickle.loads(f.read())
+            file_content = f.readlines()
+            # blockchain = file_content['chain']
+            # open_transactions = file_content['ot']
+            blockchain = json.loads(file_content[0][:-1])
+            updated_blockchain = []
+            for block in blockchain:
+                updated_block = {
+                    'previous_hash': block['previous_hash'],
+                    'index': block['index'],
+                    'proof': block['proof'],
+                    'transactions': [OrderedDict(
+                        [('sender', tx['sender']), ('recipient', tx['recipient']), ('amount', tx['amount'])]) for tx in block['transactions']]
+                }
+                updated_blockchain.append(updated_block)
+            blockchain = updated_blockchain
 
-        updated_open_transactions = []
-        for tx in open_transactions:
-            updated_open_tx = {
-                'previous_hash': open_transactions['previous_hash'],
-                'index': open_transactions['index'],
-                'proof': open_transactions['proof'],
-                'transactions': [OrderedDict(
-                    [('sender', tx['sender']), ('recipient', tx['recipient']), ('amount', tx['amount'])]) for tx in tx['transactions']]
-            }
-            updated_open_transactions.append(updated_open_tx)
-        open_transactions = updated_open_transactions
+            updated_open_transactions = []
+            for tx in open_transactions:
+                updated_open_tx = {
+                    'previous_hash': open_transactions['previous_hash'],
+                    'index': open_transactions['index'],
+                    'proof': open_transactions['proof'],
+                    'transactions': [OrderedDict(
+                        [('sender', tx['sender']), ('recipient', tx['recipient']), ('amount', tx['amount'])]) for tx in tx['transactions']]
+                }
+                updated_open_transactions.append(updated_open_tx)
+            open_transactions = updated_open_transactions
+    except IOError:
+        print("File not found! Creating the file now!")
+        # Our starting block for the blockchain
+        genesis_block = {
+            'previous_hash': '',
+            'index': 0,
+            'transactions': [],
+            'proof': 100
+        }
+        # Initializing our (empty) blockchain list
+        blockchain = [genesis_block]
+        # Unhandled transactions
+        open_transactions = []
+    except IndexError:
+        print("The file is empty. Initialize with Genesis block!")
+    finally:
+        print('Cleanup!')
 
 
 load_data()
 
 
 def save_data():
-    with open('blockchain.txt', mode='w') as f:
-        # # Storing the Blockchain as string
-        # f.write(str(blockchain))
-        # f.write('\n')
-        # f.write(str(open_transactions))
-        # # Storing the Blockchain as Json
-        f.write(json.dumps(blockchain))
-        f.write('\n')
-        f.write(json.dumps(open_transactions))
-        # # Storing the Blockchain as Binary using Pickle
-        # save_data = {
-        #     'chain': blockchain,
-        #     'ot': open_transactions
-        # }
-        # f.write(pickle.dumps(save_data))
+    try:
+        with open('blockchain.txt', mode='w') as f:
+            # # Storing the Blockchain as string
+            # f.write(str(blockchain))
+            # f.write('\n')
+            # f.write(str(open_transactions))
+            # # Storing the Blockchain as Json
+            f.write(json.dumps(blockchain))
+            f.write('\n')
+            f.write(json.dumps(open_transactions))
+            # # Storing the Blockchain as Binary using Pickle
+            # save_data = {
+            #     'chain': blockchain,
+            #     'ot': open_transactions
+            # }
+            # f.write(pickle.dumps(save_data))
+    except IOError:
+        print("Save failed!")
+    except IndexError:
+        print("The file is empty. Initialize with Genesis block!")
 
 
 def valid_proof(transactions, last_hash, proof):
@@ -171,31 +187,34 @@ def add_transaction(recipient, sender=owner, amount=1.0):
 
 def mine_block():
     """Create a new block and add open transactions to it."""
-    # Fetch the currently last block of the blockchain
-    last_block = blockchain[-1]
-    # Hash the last block (=> to be able to compare it to the stored hash value)
-    hashed_block = hash_block(last_block)
-    proof = proof_of_work()
-    # Miners should be rewarded, so let's create a reward transaction
-    # reward_transaction = {
-    #     'sender': 'MINING',
-    #     'recipient': owner,
-    #     'amount': MINING_REWARD
-    # }
-    reward_transaction = OrderedDict(
-        [('sender', 'MINING'), ('recipient', owner), ('amount', MINING_REWARD)])
-    # Copy transaction instead of manipulating the original open_transactions list
-    # This ensures that if for some reason the mining should fail, we don't have the reward transaction stored in the open transactions
-    copied_transactions = open_transactions[:]
-    copied_transactions.append(reward_transaction)
-    block = {
-        'previous_hash': hashed_block,
-        'index': len(blockchain),
-        'transactions': copied_transactions,
-        'proof': proof
-    }
-    blockchain.append(block)
-    return True
+    try:
+        # Fetch the currently last block of the blockchain
+        last_block = blockchain[-1]
+        # Hash the last block (=> to be able to compare it to the stored hash value)
+        hashed_block = hash_block(last_block)
+        proof = proof_of_work()
+        # Miners should be rewarded, so let's create a reward transaction
+        # reward_transaction = {
+        #     'sender': 'MINING',
+        #     'recipient': owner,
+        #     'amount': MINING_REWARD
+        # }
+        reward_transaction = OrderedDict(
+            [('sender', 'MINING'), ('recipient', owner), ('amount', MINING_REWARD)])
+        # Copy transaction instead of manipulating the original open_transactions list
+        # This ensures that if for some reason the mining should fail, we don't have the reward transaction stored in the open transactions
+        copied_transactions = open_transactions[:]
+        copied_transactions.append(reward_transaction)
+        block = {
+            'previous_hash': hashed_block,
+            'index': len(blockchain),
+            'transactions': copied_transactions,
+            'proof': proof
+        }
+        blockchain.append(block)
+        return True
+    except IndexError:
+        print("The file is empty. Initialize with Genesis block!")
 
 
 def get_transaction_value():
@@ -267,6 +286,9 @@ while waiting_for_input:
         if mine_block():
             open_transactions = []
             save_data()
+        else:
+            print("Empty Blockchain store file found. Delete it before starting the program.")
+            break
     elif user_choice == '3':
         print_blockchain_elements()
     elif user_choice == '4':
