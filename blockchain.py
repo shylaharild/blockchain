@@ -23,6 +23,7 @@ class Blockchain:
         # Unhandled transactions
         self.open_transactions = []
         self.load_data()
+        self.hosting_node = hosting_node_id
 
 
     def load_data(self):
@@ -87,12 +88,11 @@ class Blockchain:
         return proof
 
 
-    def get_balance(self, participant):
-        """Calculate and return the balance for a participant.
+    def get_balance(self):
+        """Calculate and return the balance for a participant. """
 
-        Arguments:
-            :participant: The person for whom to calculate the balance.
-        """
+        participant = self.hosting_node
+
         # Fetch a list of all sent coin amounts for the given person (empty lists are returned if the person was NOT the sender)
         # This fetches sent amounts of transactions that were already included in blocks of the blockchain
         tx_sender = [[tx.amount for tx in block.transactions
@@ -160,13 +160,15 @@ class Blockchain:
             hashed_block = hash_block(last_block)
             proof = self.proof_of_work()
             # Miners should be rewarded, so let's create a reward transaction
-            reward_transaction = Transaction('MINING', node, MINING_REWARD)
+            reward_transaction = Transaction('MINING', self.hosting_node, MINING_REWARD)
             # Copy transaction instead of manipulating the original open_transactions list
             # This ensures that if for some reason the mining should fail, we don't have the reward transaction stored in the open transactions
             copied_transactions = self.open_transactions[:]
             copied_transactions.append(reward_transaction)
             block = Block(len(self.chain), hashed_block, copied_transactions, proof)
             self.chain.append(block)
+            self.open_transactions = []
+            self.save_data()
             return True
         except IndexError:
             print("Minig Failed")
