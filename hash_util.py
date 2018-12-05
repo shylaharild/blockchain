@@ -2,6 +2,11 @@ import hashlib as hl
 import json
 
 def hash_string_256(string):
+    """Create a SHA256 hash for a given input string.
+
+    Arguments:
+        :string: The string which should be hashed.
+    """
     return hl.sha256(string).hexdigest()
 
 def hash_block(block):
@@ -10,4 +15,7 @@ def hash_block(block):
     Arguments:
         :block: The block that should be hashed.
     """
-    return hash_string_256(json.dumps(block, sort_keys=True).encode())
+    hashable_block = block.__dict__.copy()
+    print(hashable_block)
+    hashable_block['transactions'] = [tx.to_ordered_dict() for tx in hashable_block['transactions']]
+    return hash_string_256(json.dumps(hashable_block, sort_keys=True).encode())
