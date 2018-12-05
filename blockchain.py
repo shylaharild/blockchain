@@ -1,8 +1,10 @@
 from functools import reduce
 import hashlib as hl
+
 import json
 import pickle
 
+# Import two functions from our hash_util.py file. Omit the ".py" in the import
 from hash_util import hash_string_256, hash_block
 from block import Block
 from transaction import Transaction
