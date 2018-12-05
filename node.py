@@ -87,5 +87,6 @@ class Node:
 
         print('Done!')
 
-node = Node()
-node.lister_for_input()
+if __name__ == '__main__':
+    node = Node()
+    node.lister_for_input()
