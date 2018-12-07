@@ -162,9 +162,6 @@ class Blockchain:
             return False
 
         transaction = Transaction(sender, recipient, signature, amount)
-        if not Wallet.verify_transaction(transaction):
-            return False
-
         if Verification.verify_transaction(transaction, self.get_balance):
             self.__open_transactions.append(transaction)
             # participants.add(sender)
@@ -189,11 +186,12 @@ class Blockchain:
             # Copy transaction instead of manipulating the original open_transactions list
             # This ensures that if for some reason the mining should fail, we don't have the reward transaction stored in the open transactions
             copied_transactions = self.__open_transactions[:]
-            copied_transactions.append(reward_transaction)
-            block = Block(len(self.__chain), hashed_block, copied_transactions, proof)
-            for tx in block.transactions:
+            for tx in copied_transactions:
                 if not Wallet.verify_transaction(tx):
                     return False
+            copied_transactions.append(reward_transaction)
+            block = Block(len(self.__chain), hashed_block, copied_transactions, proof)
+            
             self.__chain.append(block)
             self.__open_transactions = []
             self.save_data()
