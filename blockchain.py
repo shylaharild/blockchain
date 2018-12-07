@@ -55,7 +55,7 @@ class Blockchain:
                 # We need to convert the loaded data because Transactions should use OrderedDict
                 updated_blockchain = []
                 for block in blockchain:
-                    converted_tx = [Transaction(tx['sender'], tx['recipient'], tx['amount']) for tx in block['transactions']]
+                    converted_tx = [Transaction(tx['sender'], tx['recipient'], tx['signature'], tx['amount']) for tx in block['transactions']]
                     updated_block = Block(block['index'], block['previous_hash'], converted_tx, block['proof'], block['timestamp'])
                     updated_blockchain.append(updated_block)
                 self.chain = updated_blockchain
@@ -63,7 +63,7 @@ class Blockchain:
                 # We need to convert the loaded data because Transactions should use OrderedDict
                 updated_open_transactions = []
                 for tx in open_transactions:
-                    updated_open_tx = [Transaction(tx['sender'], tx['recipient'], tx['amount'])]
+                    updated_open_tx = [Transaction(tx['sender'], tx['recipient'], tx['signature'], tx['amount'])]
                     updated_open_transactions.append(updated_open_tx)
                 self.__open_transactions = updated_open_transactions
         except (IOError, IndexError):
@@ -160,7 +160,7 @@ class Blockchain:
         if self.hosting_node == None:
             return False
 
-        transaction = Transaction(sender, recipient, amount)
+        transaction = Transaction(sender, recipient, signature, amount)
         if Verification.verify_transaction(transaction, self.get_balance):
             self.__open_transactions.append(transaction)
             # participants.add(sender)
@@ -181,7 +181,7 @@ class Blockchain:
             hashed_block = hash_block(last_block)
             proof = self.proof_of_work()
             # Miners should be rewarded, so let's create a reward transaction
-            reward_transaction = Transaction('MINING', self.hosting_node, MINING_REWARD)
+            reward_transaction = Transaction('MINING', self.hosting_node, '', MINING_REWARD)
             # Copy transaction instead of manipulating the original open_transactions list
             # This ensures that if for some reason the mining should fail, we don't have the reward transaction stored in the open transactions
             copied_transactions = self.__open_transactions[:]
