@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 
 from wallet import Wallet
@@ -46,7 +46,7 @@ def load_keys():
 
 @app.route('/', methods=['GET'])
 def get_ui():
-    return 'I am alive!'
+    return send_from_directory('ui', 'node.html')
 
 @app.route('/mine', methods=['POST'])
 def mine():
