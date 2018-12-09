@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 
 from wallet import Wallet
@@ -90,6 +90,51 @@ def get_chain():
     for dict_block in dict_chain:
         dict_block['transactions'] = [tx.__dict__ for tx in dict_block['transactions']]
     return jsonify(dict_chain), 200
+
+@app.route('/transaction', methods=['POST'])
+def add_transaction():
+    if wallet.public_key ==  None:
+        response = {
+            'message': 'No wallet set up!'
+        }
+        return jsonify(response), 400
+    values = request.get_json()
+    if not values:
+        response = {
+            'message': 'No data found!'
+        }
+        return jsonify(response), 400
+    required_fields = ['recipient', 'amount']
+    if not all(field in values for field in required_fields):
+        response = {
+            'message': 'Requied Data is missing'
+        }
+        return jsonify(response), 400
+    recipient = values['recipient']
+    amount = values['amount']
+    signature = wallet.sign_transaction(wallet.public_key, recipient, amount)
+    success = blockchain.add_transaction(recipient, wallet.public_key, signature, amount)
+    if success:
+        response = {
+            'message': 'Transaction added!',
+            'transaction': {
+                'sender': wallet.public_key,
+                'recipient': recipient,
+                'amount': amount,
+                'signature': signature
+            },
+            'funds': blockchain.get_balance()
+        }
+        return jsonify(response), 400
+    else:
+        response = {
+            'message': 'Creating a transction failed!'
+        }
+        return jsonify(response), 500
+
+@app.route('/transactions', methods=['GET'])
+def get_open_transactions():
+    pass
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
