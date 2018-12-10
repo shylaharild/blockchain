@@ -208,7 +208,7 @@ class Blockchain:
             print("Minig Failed")
             return None
 
-    def add_peer_noe(self, node):
+    def add_peer_node(self, node):
         """
         Adds a new node to the peer node set.
 
@@ -227,3 +227,7 @@ class Blockchain:
         """
         self.__peer_node.discard(node)
         self.save_data()
+
+    def get_peer_node(self):
+        """ Return a list of all connected peer nodes. """
+        return list(self.__peer_node)

@@ -147,6 +147,31 @@ def get_chain():
             tx.__dict__ for tx in dict_block['transactions']]
     return jsonify(dict_chain), 200
 
+@app.route('/node', methods=['POST'])
+def add_node():
+    values = request.get_json()
+    if wallet.public_key == None:
+        response = {
+            'message': 'No wallet set up.'
+        }
+        return jsonify(response), 400
+    if not values:
+        response = {
+            'message': 'No data found.'
+        }
+        return jsonify(response), 400
+    if 'node' in values:
+        response = {
+            'message': 'No Node data found.'
+        }
+        return jsonify(response), 400
+    node = values['node']
+    blockchain.add_peer_node(node)
+    response = {
+        'message': 'Node added Successfully!',
+        'all_nodes': blockchain.get_peer_node()
+    }
+    return jsonify(response), 201
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
