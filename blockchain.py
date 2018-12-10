@@ -29,6 +29,7 @@ class Blockchain:
         self.__open_transactions = []
         self.load_data()
         self.hosting_node = hosting_node_id
+        self.__peer_node = set()
 
 
     @property
@@ -60,13 +61,16 @@ class Blockchain:
                     updated_block = Block(block['index'], block['previous_hash'], converted_tx, block['proof'], block['timestamp'])
                     updated_blockchain.append(updated_block)
                 self.chain = updated_blockchain
-                open_transactions = json.loads(file_content[1])
+                open_transactions = json.loads(file_content[1][:-1])
                 # We need to convert the loaded data because Transactions should use OrderedDict
                 updated_open_transactions = []
                 for tx in open_transactions:
                     updated_open_tx = [Transaction(tx['sender'], tx['recipient'], tx['signature'], tx['amount'])]
                     updated_open_transactions.append(updated_open_tx)
                 self.__open_transactions = updated_open_transactions
+                # Load the peer nodes
+                peer_nodes = json.loads(file_content[2])
+                self.__peer_node = set(peer_nodes)
         except (IOError, IndexError):
             print("Handled exception...")
             pass
@@ -85,6 +89,8 @@ class Blockchain:
                 f.write('\n')
                 savable_tx = [tx.__dict__ for tx in self.__open_transactions]
                 f.write(json.dumps(savable_tx))
+                f.write('\n')
+                f.write(json.dumps(list(self.__peer_node)))
                 # # Storing the Blockchain as Binary using Pickle
                 # save_data = {
                 #     'chain': blockchain,
@@ -201,3 +207,23 @@ class Blockchain:
         except IndexError:
             print("Minig Failed")
             return None
+
+    def add_peer_noe(self, node):
+        """
+        Adds a new node to the peer node set.
+
+        Arguments:
+            :node: The node URL which should be added.
+        """
+        self.__peer_node.add(node)
+        self.save_data()
+
+    def remove_peer_node(self, node):
+        """
+        Removes a node to the peer node set.
+
+        Arguments:
+            :node: The node URL which should be removed.
+        """
+        self.__peer_node.discard(node)
+        self.save_data()
