@@ -20,7 +20,7 @@ print(__name__)
 # participants = {'Sri'}
 
 class Blockchain:
-    def __init__(self, hosting_node_id):
+    def __init__(self, hosting_node_id, node_id):
         # Our starting block for the blockchain
         genesis_block = Block(0, '', [], 100, 0)
         # Initializing our (empty) blockchain list
@@ -29,6 +29,7 @@ class Blockchain:
         self.__open_transactions = []
         self.hosting_node = hosting_node_id
         self.__peer_node = set()
+        self.node_id = node_id
         self.load_data()
 
 
@@ -48,7 +49,7 @@ class Blockchain:
     def load_data(self):
         """Initialize blockchain + open transactions data from a file."""
         try:
-            with open('blockchain.txt', mode='r') as f:
+            with open('blockchain-{}.txt'.format(self.node_id), mode='r') as f:
                 # file_content = pickle.loads(f.read())
                 file_content = f.readlines()
                 # blockchain = file_content['chain']
@@ -81,7 +82,7 @@ class Blockchain:
     def save_data(self):
         """Save blockchain + open transactions snapshot to a file."""
         try:
-            with open('blockchain.txt', mode='w') as f:
+            with open('blockchain-{}.txt'.format(self.node_id), mode='w') as f:
                 # # Storing the Blockchain as Json
                 savable_chain = [block.__dict__ for block in [Block(block_el.index, block_el.previous_hash, [
                     tx.__dict__ for tx in block_el.transactions], block_el.proof, block_el.timestamp) for block_el in self.__chain]]
