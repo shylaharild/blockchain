@@ -21,14 +21,22 @@ print(__name__)
 # participants = {'Sri'}
 
 class Blockchain:
-    def __init__(self, hosting_node_id, node_id):
+    """The Blockchain class manages the chain of blocks as well as open transactions and the node on which it's running.
+
+    Attributes:
+        :chain: The list of blocks
+        :open_transactions (private): The list of open transactions
+        :hosting_node: The connected node (which runs the blockchain).
+    """
+
+    def __init__(self, public_key, node_id):
         # Our starting block for the blockchain
         genesis_block = Block(0, '', [], 100, 0)
         # Initializing our (empty) blockchain list
         self.chain = [genesis_block]
         # Unhandled transactions
         self.__open_transactions = []
-        self.hosting_node = hosting_node_id
+        self.public_key = public_key
         self.__peer_nodes = set()
         self.node_id = node_id
         self.load_data()
@@ -44,6 +52,7 @@ class Blockchain:
 
     
     def get_open_transactions(self):
+        """Returns a copy of the open transactions list."""
         return self.__open_transactions[:]
 
 
@@ -118,9 +127,9 @@ class Blockchain:
         """Calculate and return the balance for a participant. """
 
         if sender == None:
-            if self.hosting_node == None:
+            if self.public_key == None:
                 return None
-            participant = self.hosting_node
+            participant = self.public_key
         else:
             participant = sender
 
@@ -171,8 +180,8 @@ class Blockchain:
         #     'recipient': recipient,
         #     'amount': amount
         # }
-        if self.hosting_node == None:
-            return False
+        # if self.public_key == None:
+        #     return False
 
         transaction = Transaction(sender, recipient, signature, amount)
         if Verification.verify_transaction(transaction, self.get_balance):
@@ -195,15 +204,15 @@ class Blockchain:
     def mine_block(self):
         """Create a new block and add open transactions to it."""
         try:
-            if self.hosting_node == None:
-                return None
+            if self.public_key == None:
+                return False
             # Fetch the currently last block of the blockchain
             last_block = self.__chain[-1]
             # Hash the last block (=> to be able to compare it to the stored hash value)
             hashed_block = hash_block(last_block)
             proof = self.proof_of_work()
             # Miners should be rewarded, so let's create a reward transaction
-            reward_transaction = Transaction('MINING', self.hosting_node, '', MINING_REWARD)
+            reward_transaction = Transaction('MINING', self.public_key, '', MINING_REWARD)
             # Copy transaction instead of manipulating the original open_transactions list
             # This ensures that if for some reason the mining should fail, we don't have the reward transaction stored in the open transactions
             copied_transactions = self.__open_transactions[:]
