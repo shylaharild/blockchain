@@ -29,7 +29,7 @@ class Blockchain:
         # Unhandled transactions
         self.__open_transactions = []
         self.hosting_node = hosting_node_id
-        self.__peer_node = set()
+        self.__peer_nodes = set()
         self.node_id = node_id
         self.load_data()
 
@@ -72,7 +72,7 @@ class Blockchain:
                 self.__open_transactions = updated_open_transactions
                 # Load the peer nodes
                 peer_nodes = json.loads(file_content[2])
-                self.__peer_node = set(peer_nodes)
+                self.__peer_nodes = set(peer_nodes)
         except (IOError, IndexError):
             print("Handled exception...")
             pass
@@ -92,7 +92,7 @@ class Blockchain:
                 savable_tx = [tx.__dict__ for tx in self.__open_transactions]
                 f.write(json.dumps(savable_tx))
                 f.write('\n')
-                f.write(json.dumps(list(self.__peer_node)))
+                f.write(json.dumps(list(self.__peer_nodes)))
                 # # Storing the Blockchain as Binary using Pickle
                 # save_data = {
                 #     'chain': blockchain,
@@ -175,7 +175,7 @@ class Blockchain:
         if Verification.verify_transaction(transaction, self.get_balance):
             self.__open_transactions.append(transaction)
             self.save_data()
-            for node in self.__peer_node:
+            for node in self.__peer_nodes:
                 url = 'http://{}/broadcast-transaction'.format(node)
                 try:
                     response = requests.post(url, json={'sender': sender, 'recipient': recipient, 'amount': amount, 'signature': signature})
@@ -224,7 +224,7 @@ class Blockchain:
         Arguments:
             :node: The node URL which should be added.
         """
-        self.__peer_node.add(node)
+        self.__peer_nodes.add(node)
         self.save_data()
 
     def remove_peer_node(self, node):
@@ -234,9 +234,9 @@ class Blockchain:
         Arguments:
             :node: The node URL which should be removed.
         """
-        self.__peer_node.discard(node)
+        self.__peer_nodes.discard(node)
         self.save_data()
 
     def get_peer_node(self):
         """ Return a list of all connected peer nodes. """
-        return list(self.__peer_node)
+        return list(self.__peer_nodes)
