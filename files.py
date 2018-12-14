@@ -9,4 +9,5 @@ with open('demo.txt', mode='r') as f:
     while line:
         print(line)
         line = f.readline()
+
 print('Done!')
